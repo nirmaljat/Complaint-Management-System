@@ -5,7 +5,7 @@ import ErrorHandler from "../middleware/error.js";
 
 
 
-export const register= async (req,res)=>{
+export const register= async (req,res,next)=>{
 try {
     const { name,email, password } = req.body;
 
@@ -15,12 +15,12 @@ try {
     user = await User.create({ name, email, password});
     sendCookie(user, res, "Registered Successfully", 201);
 } catch (error) {
-    next(error);
+    return next(error);
 }
 
 }
 
-export const login= async (req,res)=>{
+export const login= async (req,res,next)=>{
 try {
     const { email, password } = req.body;
     let user= await User.findOne({email}).select("+password");;
@@ -37,7 +37,9 @@ try {
 }
 
 export const logout= async (req,res)=>{
-    res.status(200).cookie("token", "", { expires: new Date(Date.now()),})
+    res.status(200).cookie("token", "", { expires: new Date(Date.now()),
+          sameSite:process.env.NODE_ENV ==="dev" ?"lax":"none",
+      secure:process.env.NODE_ENV ==="dev" ? false:true,})
     .json({
         success: true
       });
